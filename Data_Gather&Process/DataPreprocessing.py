@@ -1,8 +1,9 @@
 # Coding in utf-8
-# For Image in DICOM file reading and cropping
+# For Image in DICOM/NII file reading and cropping
 # Processing in batches
-# 2018/11/16
+# 2018/11/17(Last updating)
 import os
+import nibabel as nib
 import SimpleITK as sitk
 import numpy as np
 from PIL import Image
@@ -12,6 +13,11 @@ def Load_DCM_File(filename):
 	img_array = sitk.GetArrayFromImage(ds)
 	img_array = img_array[0]
 	return img_array					# 返回读出的DICOM文件图片(ndarray)
+
+def Load_NII_File(filename):
+	img = nib.load(filename)
+	img_array = img.get_fdata()
+	return img_array					# 返回读出的NII文件(ndarray)
 
 rootdir = 'F:\\Seu\\SRTP\\Train\\12.30\\image'
 nrootdir = 'F:\\Seu\\SRTP\\Train\\12.30\\training'
