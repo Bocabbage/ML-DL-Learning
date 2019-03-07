@@ -1,5 +1,6 @@
 # K-Nearest Neighbors(Classification)
 # 更新时间：2019/3/6
+# 更新时间：2019/3/7(修改小错误：为测试集features归一化)
 # 描述：照搬了腿爷的写法，向腿爷同志学习.jpg         
 # 数据形式：np.array
 #          train_data(60000*784)
@@ -48,7 +49,6 @@ tr_data,tr_labels = loadlocal_mnist(images_path='E:/MNIST/train-images.idx3-ubyt
 ts_data,ts_labels = loadlocal_mnist(images_path='E:/MNIST/t10k-images.idx3-ubyte',
                                     labels_path='E:/MNIST/t10k-labels.idx1-ubyte')
 
-print(ts_data.max())
 
 #mtr_data = Binaryzation(tr_data[0:10000,:],127)
 #mtr_labels = tr_labels[0:10000]
@@ -64,7 +64,7 @@ start_time = time.time()
 knn = KNN(k=10)
 # 归一化
 knn.fit((mtr_data/mtr_data.max()).reshape([-1,28*28]), mtr_labels)
-predict = knn.predict(mts_data)
+predict = knn.predict((mts_data/mts_data.max()).reshape([-1,28*28]))
 end_time = time.time()
 CheckResult(mts_labels, predict)
 print("Time:%f s\n"%(end_time-start_time))
