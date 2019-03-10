@@ -57,18 +57,18 @@ ts_data,ts_labels = loadlocal_mnist(images_path='E:/MNIST/t10k-images.idx3-ubyte
                                     labels_path='E:/MNIST/t10k-labels.idx1-ubyte')
 
 #mtr_data = Binaryzation(tr_data[:,:],127)
-mtr_data = tr_data[0:10000,:]
-mtr_labels = tr_labels[0:10000]
+#mtr_data = tr_data[0:10000,:]
+#mtr_labels = tr_labels[0:10000]
 #mts_data = Binaryzation(ts_data[:,:],127)
-mts_data = ts_data[0:100,:]
-mts_labels = ts_labels[0:100]
+#mts_data = ts_data[0:100,:]
+#mts_labels = ts_labels[0:100]
 
 start_time = time.time()
-pre_labels = SearchNeighbors(k=10,train_data=(mtr_data/(mtr_data.max())).reshape([-1,28*28]),
-                             train_labels=mtr_labels, 
-                             test_data=(mts_data/(mts_data.max())).reshape([-1,28*28]))
+pre_labels = SearchNeighbors(k=10,train_data=(tr_data/(tr_data.max())).reshape([-1,28*28]),
+                             train_labels=tr_labels, 
+                             test_data=(ts_data/(ts_data.max())).reshape([-1,28*28]))
 end_time = time.time()
-CheckResult(test_labels=mts_labels, 
+CheckResult(test_labels=ts_labels, 
             predict_labels=pre_labels)
 
 print("Time:%f s\n"%(end_time-start_time))
