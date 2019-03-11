@@ -2,6 +2,7 @@
 # 更新时间：2019/3/6
 #          2019/3/7(修改小错误：为测试集features归一化)
 #          2019/3/10(增加PCA[未确定PCA与归一化关系故暂时忽略归一化])
+#          2019/3/11(PCA+归一化测试、超参数实验)
 # 描述：照搬了腿爷的写法，向腿爷同志学习.jpg         
 # 数据形式：np.array
 #          train_data(60000*784)
@@ -9,17 +10,18 @@
 #          test_data(10000*784)
 #          test_labels(10000,)
 # 结果：
-#       归一化未PCA：3081.164s 96.65%
-#       PCA未归一化：
+#       归一化未PCA：96.65%
+#       PCA未归一化：88.56%(压缩至150)
+#       PCA+归一化：92.03%(压缩至150)
+#       PCA+归一化：87.07%(压缩至15*15)
 import time
 import numpy as np 
 from scipy.stats import mode
 from mlxtend.data import loadlocal_mnist 
 from sklearn.decomposition import PCA
 
-def Decomposition(trainX,testX):
+def Decomposition(trainX,testX,n_components=150):
     """use PCA to decompose the data"""
-    n_components = min(trainX.shape)
     pca = PCA(n_components = n_components,
               svd_solver = "randomized",
               whiten = True).fit(trainX)
@@ -71,8 +73,9 @@ ts_data,ts_labels = loadlocal_mnist(images_path='E:/MNIST/t10k-images.idx3-ubyte
 #mts_labels = ts_labels[0:100]
 
 # 使用PCA进行数据压缩/主成分提取
-tr_data_pca,ts_data_pca = Decomposition(tr_data, ts_data)
-
+tr_data_pca,ts_data_pca = Decomposition(tr_data, ts_data,15*15)
+tr_data_pca = (tr_data_pca/tr_data_pca.max()).reshape([-1,15*15])
+ts_data_pca = (ts_data_pca/ts_data_pca.max()).reshape([-1,15*15])
 
 start_time = time.time()
 knn = KNN(k=10)
