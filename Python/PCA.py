@@ -2,10 +2,12 @@
 # 更新时间：2019/3/12
 #          2019/3/13(Debug,处理中心化)
 #          2019/3/14(SVD方案，未处理完全)
+#          2019/3/16(SVD方法完成，PCA[用于图像压缩]轮子造完)
 import numpy as np
 from mlxtend.data import loadlocal_mnist
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
+from sklearn.utils.extmath import svd_flip
 
 class PCA_2d:
     """Take the data forms as X(m*n) to do PCA"""
@@ -15,25 +17,29 @@ class PCA_2d:
         self.use_svd = use_svd
     def fit(self,X):
         """X is a 2-d numpy array"""
+        # Actually, the 'eig' method and the svd method
+        # are the same thing
         mean_X = np.mean(X,axis = 0) 
         X_n = X - mean_X
         if self.use_svd == 'eig':
             sigma = np.dot(X_n.T,X_n)
-            #sigma = np.cov(X.T)
+            #sigma = np.cov(X)
             eigvalue,eigvector = np.linalg.eig(sigma)
             eigvalue = np.real(eigvalue)
             eigvector = np.real(eigvector)
-            self.w = eigvector[np.argsort(-eigvalue)[:self.n_components],:]
+            self.w = eigvector[np.argsort(eigvalue)[self.n_components:],:]
         elif self.use_svd == 'svd':
-            self.U,self.S,V = np.linalg.svd(X_n)
-            self.w = self.U[:,0:self.n_components]
+            # Don't forget the 'full_matrices'=False
+            # as it's for reduced SVD
+            U,S,V = np.linalg.svd(X_n,full_matrices=False)
+            # flip eigenvectors' sign 
+            #to enforce deterministic output(from:sklearn/pca.py)
+            U,V = svd_flip(U, V)
+            self.w = V[:self.n_components]
 
 
     def transform(self,Y):
-        if self.use_svd == 'eig':
-            return np.dot(Y,self.w.T)
-        elif self.use_svd == 'svd':
-            return self.w * self.S[:self.n_components]
+        return np.dot(Y,self.w.T)
 
 # Test
 tr_data,tr_labels = loadlocal_mnist(images_path='E:/MNIST/train-images.idx3-ubyte',
