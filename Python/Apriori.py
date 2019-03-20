@@ -1,6 +1,12 @@
 # Apriori Algorithm
 # 实现对事物集D中频繁项集(frequent itemsets)的查询
 # 更新时间：2019/3/19(更新至朴素Apriori的子方法完成)
+#          2019/3/20(实现朴素Apriori，先验知识尚未使用/Hash-Table优化尚未使用)
+
+from functools import reduce
+from collections import Counter
+from copy import deepcopy
+import time
 
 class Apriori:
     """
@@ -15,31 +21,42 @@ class Apriori:
 
     """
     def __init__(self,D,counts_threshold):
-        """D is a list of lists while each sub-list is 
-        a transaction"""
-        self.threshold = counts_threshold
+        """
+            D is a list of lists while each sub-list is 
+            a transaction
+        """
+        self.min_sup = counts_threshold
+        # each item in every transactions should be sorted
         self.D = D
 
-    def _apriori_gen(self,former_L):
+    def _apriori_gen(self,former_L,k):
         """
             private_function:
             used the L(k-1) to form a C(k)
-            input: former_L  a list of tuples
+            input: former_L  /a list of tuples
+                   k         /parameter k for C(k)
         """
-        lformer_L = []
-        for x in former_L:
-            lformer_L.append(x[0])
+        lformer_L = [x[0] for x in former_L]
 
+        # A candidate result Ck:list of lists
         Ck = []
         former_Llen = len(lformer_L)
-        k = len(former_L[0])+1
+        # Need to be optimized
+        # and these operations need sorted first
         for subi in range(0,former_Llen):
             for subj in range(subi+1,former_Llen):
-                if subi[:k-2] == subj[:k-2]:
-                    c = subi.append(subj[-1])
-                    if not _has_infrequent_subset(c,lformer_L):
-                        Ck.append(c)
-        return Ck
+                if (k>1 and lformer_L[subi][:(k-1)] == lformer_L[subj][:(k-1)]):
+                    c = deepcopy(lformer_L[subi])
+                    c.append(lformer_L[subj][-1])
+                    #if not self._has_infrequent_subset(c,lformer_L):
+                    Ck.append(c)
+                elif k-2<0:
+                    c = [lformer_L[subi],lformer_L[subj]]
+                    #if not self._has_infrequent_subset(c,lformer_L):
+                    Ck.append(c)
+
+        # Need sorted: For the next time _apriori_gen
+        return [sorted(x) for x in Ck]
 
     def _has_infrequent_subset(self,c,lformer_L):
         """
@@ -50,7 +67,67 @@ class Apriori:
         """
         len_c = len(c)             
         for i in range(0,len_c):
-            temp = c[:i]+c[i:]
+            temp = c[:i]+c[i+1:]
             if temp not in lformer_L:
                 return True
         return False
+
+    def _find_frequent1(self):
+        """
+            private_function:
+            use the self.D to build the L1
+        """
+        count = Counter(reduce(lambda x,y:x+y,self.D))
+        L1 = list(count.items())
+        for x in L1:
+            if (x[1] < self.min_sup):
+                L1.remove(x)
+        return L1
+
+    def find_frequent(self):
+        """
+            public_function:
+            Apply Apriori to find frequent itemsets.
+        """
+        D_set = [set(x) for x in self.D]
+        D_len = len(self.D)
+
+        L=[]
+        L.append(self._find_frequent1())
+        FreItem_nums = len(L[0])
+        k = 0
+        while(L[k] != [] and k < FreItem_nums):
+            k += 1
+            Candidate = self._apriori_gen(L[k-1],k)
+            Candidate_len = len(Candidate)
+            pattern_counts = [0 for x in range(0,Candidate_len)]
+            # use 'set' to make sure if the items are in D
+            Candidate_set = [set(x) for x in Candidate]
+            for i in  range(0,Candidate_len):
+                for j in range(0,D_len):
+                    if(Candidate_set[i].issubset(D_set[j])):
+                        pattern_counts[i] += 1
+            
+            temp = list(zip(Candidate, pattern_counts))
+            L.append(list(filter(lambda x:x[1]>=self.min_sup, temp)))
+        
+        return reduce(lambda x,y:x+y,L)
+
+# test #
+
+if __name__ == '__main__':
+    D=[['I1','I2','I5'],
+       ['I2','I4'],
+       ['I2','I3'],
+       ['I1','I2','I4'],
+       ['I1','I3'],
+       ['I2','I3'],
+       ['I1','I3'],
+       ['I1','I2','I3','I5'],
+       ['I1','I2','I3']]
+
+    apriori = Apriori(D, 2)
+    start_time = time.time()
+    L = apriori.find_frequent()
+    print(L)
+    print("Cost time: %.3fs"%(time.time()-start_time))
