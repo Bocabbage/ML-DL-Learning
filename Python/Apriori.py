@@ -2,6 +2,7 @@
 # 实现对事物集D中频繁项集(frequent itemsets)的查询
 # 更新时间：2019/3/19(更新至朴素Apriori的子方法完成)
 #          2019/3/20(实现朴素Apriori，先验知识尚未使用/Hash-Table优化尚未使用)
+#          2019/3/21(先验知识子函数完成并验证)
 
 from functools import reduce
 from collections import Counter
@@ -48,12 +49,12 @@ class Apriori:
                 if (k>1 and lformer_L[subi][:(k-1)] == lformer_L[subj][:(k-1)]):
                     c = deepcopy(lformer_L[subi])
                     c.append(lformer_L[subj][-1])
-                    #if not self._has_infrequent_subset(c,lformer_L):
-                    Ck.append(c)
+                    if not self._has_infrequent_subset(c,lformer_L):
+                        Ck.append(c)
                 elif k-2<0:
-                    c = [lformer_L[subi],lformer_L[subj]]
-                    #if not self._has_infrequent_subset(c,lformer_L):
-                    Ck.append(c)
+                    c = lformer_L[subi]+lformer_L[subj]
+                    if not self._has_infrequent_subset(c,lformer_L):
+                        Ck.append(c)
 
         # Need sorted: For the next time _apriori_gen
         return [sorted(x) for x in Ck]
@@ -78,11 +79,13 @@ class Apriori:
             use the self.D to build the L1
         """
         count = Counter(reduce(lambda x,y:x+y,self.D))
-        L1 = list(count.items())
+        L1 = [list(x) for x in list(count.items())]
         for x in L1:
+            x[0] = [x[0]]
             if (x[1] < self.min_sup):
                 L1.remove(x)
-        return L1
+        return [tuple(x) for x in L1]
+        
 
     def find_frequent(self):
         """
