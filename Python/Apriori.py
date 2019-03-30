@@ -79,11 +79,12 @@ class Apriori:
             use the self.D to build the L1
         """
         count = Counter(reduce(lambda x,y:x+y,self.D))
-        L1 = [list(x) for x in list(count.items())]
-        for x in L1:
+        C1 = [list(x) for x in list(count.items())]
+        L1 = []
+        for x in C1:
             x[0] = [x[0]]
-            if (x[1] < self.min_sup):
-                L1.remove(x)
+            if (x[1] >= self.min_sup):
+                L1.append(x)
         return [tuple(x) for x in L1]
         
 
@@ -119,17 +120,22 @@ class Apriori:
 # test #
 
 if __name__ == '__main__':
-    D=[['I1','I2','I5'],
-       ['I2','I4'],
-       ['I2','I3'],
-       ['I1','I2','I4'],
-       ['I1','I3'],
-       ['I2','I3'],
-       ['I1','I3'],
-       ['I1','I2','I3','I5'],
-       ['I1','I2','I3']]
+    # D=[['I1','I2','I5'],
+    #    ['I2','I4'],
+    #    ['I2','I3'],
+    #    ['I1','I2','I4'],
+    #    ['I1','I3'],
+    #    ['I2','I3'],
+    #    ['I1','I3'],
+    #    ['I1','I2','I3','I5'],
+    #    ['I1','I2','I3']]
+    D=[['M','O','N','K','E','Y'],
+       ['K','O','N','K','E','Y'],
+       ['M','A','K','E'],
+       ['M','U','C','E','Y'],
+       ['C','O','K','I','E']]
 
-    apriori = Apriori(D, 2)
+    apriori = Apriori(D, 3)
     start_time = time.time()
     L = apriori.find_frequent()
     print(L)
