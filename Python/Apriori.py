@@ -3,6 +3,7 @@
 # 更新时间：2019/3/19(更新至朴素Apriori的子方法完成)
 #          2019/3/20(实现朴素Apriori，先验知识尚未使用/Hash-Table优化尚未使用)
 #          2019/3/21(先验知识子函数完成并验证)
+#          2019/3/31(Debug，再次验证完毕)
 
 from functools import reduce
 from collections import Counter
@@ -37,6 +38,8 @@ class Apriori:
             input: former_L  /a list of tuples
                    k         /parameter k for C(k)
         """
+        # itemset list of the C[k-1]: don't need
+        # 
         lformer_L = [x[0] for x in former_L]
 
         # A candidate result Ck:list of lists
@@ -49,15 +52,16 @@ class Apriori:
                 if (k>1 and lformer_L[subi][:(k-1)] == lformer_L[subj][:(k-1)]):
                     c = deepcopy(lformer_L[subi])
                     c.append(lformer_L[subj][-1])
+                    # 'c' is a candidate item and
+                    # the key point:we need to keep the orders
+                    c = sorted(c)
                     if not self._has_infrequent_subset(c,lformer_L):
                         Ck.append(c)
                 elif k-2<0:
                     c = lformer_L[subi]+lformer_L[subj]
                     if not self._has_infrequent_subset(c,lformer_L):
                         Ck.append(c)
-
-        # Need sorted: For the next time _apriori_gen
-        return [sorted(x) for x in Ck]
+        return Ck
 
     def _has_infrequent_subset(self,c,lformer_L):
         """
@@ -113,6 +117,7 @@ class Apriori:
                         pattern_counts[i] += 1
             
             temp = list(zip(Candidate, pattern_counts))
+            # Select just the itemsets whose support >= min_sup
             L.append(list(filter(lambda x:x[1]>=self.min_sup, temp)))
         
         return reduce(lambda x,y:x+y,L)
@@ -120,23 +125,24 @@ class Apriori:
 # test #
 
 if __name__ == '__main__':
-    # D=[['I1','I2','I5'],
-    #    ['I2','I4'],
-    #    ['I2','I3'],
-    #    ['I1','I2','I4'],
-    #    ['I1','I3'],
-    #    ['I2','I3'],
-    #    ['I1','I3'],
-    #    ['I1','I2','I3','I5'],
-    #    ['I1','I2','I3']]
-    D=[['M','O','N','K','E','Y'],
-       ['K','O','N','K','E','Y'],
-       ['M','A','K','E'],
-       ['M','U','C','E','Y'],
-       ['C','O','K','I','E']]
+    D=[['I1','I2','I5'],
+       ['I2','I4'],
+       ['I2','I3'],
+       ['I1','I2','I4'],
+       ['I1','I3'],
+       ['I2','I3'],
+       ['I1','I3'],
+       ['I1','I2','I3','I5'],
+       ['I1','I2','I3']]
+    # D=[['M','O','N','K','E','Y'],
+    #    ['K','O','N','K','E','Y'],
+    #    ['M','A','K','E'],
+    #    ['M','U','C','K','Y'],
+    #    ['C','O','K','I','E']]
 
-    apriori = Apriori(D, 3)
+    apriori = Apriori(D, 2)
     start_time = time.time()
     L = apriori.find_frequent()
     print(L)
+    print(len(L))
     print("Cost time: %.3fs"%(time.time()-start_time))
