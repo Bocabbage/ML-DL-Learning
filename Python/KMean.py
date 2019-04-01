@@ -1,10 +1,10 @@
-# K-Mean Algorithm
+# K-Means Algorithm
 # 更新时间:2019/3/26(已完成，未验证)
-#         2019/4/1(验证，Unevenly sized blobs存在问题，待解决)
+#         2019/4/1(验证)
 import numpy as np
 import random
 
-class KMeans:
+class KMean:
     """K-Mean Algorithm for Cluster Analysis"""
     def __init__(self,n_clusters,random_state):
         """n_clusters is the number of clusters"""
@@ -57,12 +57,25 @@ class KMeans:
 
         self.labels_ = y_predict
         self.cluster_centers_ = centroids
-        return y_predict
+
+    def fit_predict(self,X):
+        """
+            finish the 'fit' process and return the 
+            predict results of X
+        """
+        self.fit(X)
+        return self.labels_
+
+    def predict(self,Y):
+        pass
+
+
 
 # For test
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from sklearn.datasets import make_blobs
+    from sklearn.cluster import KMeans
 
     plt.figure(figsize=(12,12))
 
@@ -71,36 +84,53 @@ if __name__ == "__main__":
     X,y = make_blobs(n_samples=n_samples,
                      random_state=random_state)
     # Incorrect number of clusters
-    y_pred = KMeans(n_clusters=2, random_state=random_state).fit(X)
+    kmean = KMean(n_clusters=2, random_state=random_state)
+    y_pred = kmean.fit_predict(X)
+    #sky_pred = KMeans(n_clusters=2, random_state=random_state).fit_predict(X)
     plt.subplot(221)
     plt.scatter(X[:, 0], X[:, 1], c=y_pred)
+    #plt.scatter(X[:, 0], X[:, 1], c=sky_pred)
+    centroids = kmean.cluster_centers_
+    plt.scatter(centroids[:, 0], centroids[:, 1],
+            marker='x', s=169, linewidths=3,
+            color='b', zorder=10)
     plt.title("Incorrect Number of Blobs")
 
     # Anisotropiclly distributed data
     transformation = [[0.60834549, -0.63667341], [-0.40887718, 0.85253229]]
     X_aniso = np.dot(X, transformation)
-    y_pred = KMeans(n_clusters=3, random_state=random_state).fit(X_aniso)
+    y_pred = KMean(n_clusters=3, random_state=random_state).fit_predict(X_aniso)
+    #sky_pred = KMeans(n_clusters=3, random_state=random_state).fit_predict(X_aniso)
     plt.subplot(222)
     plt.scatter(X_aniso[:, 0], X_aniso[:, 1], c=y_pred)
+    #plt.scatter(X_aniso[:, 0], X_aniso[:, 1], c=sky_pred)
     plt.title("Anisotropicly Distributed Blobs")
 
     # Different variance
     X_varied, y_varied = make_blobs(n_samples=n_samples,
                                     cluster_std=[1.0, 2.5, 0.5],
                                     random_state=random_state)
-    y_pred = KMeans(n_clusters=3, random_state=random_state).fit(X_varied)
+    y_pred = KMean(n_clusters=3, random_state=random_state).fit_predict(X_varied)
+    #sky_pred = KMeans(n_clusters=3,random_state=random_state).fit_predict(X_varied)
 
     plt.subplot(223)
     plt.scatter(X_varied[:, 0], X_varied[:, 1], c=y_pred)
+    #plt.scatter(X_varied[:, 0], X_varied[:, 1], c=sky_pred)
     plt.title("Unequal Variance")
 
     # Unevenly sized blobs
+    # K-Means can't properly process unevenly sized data
+    # (!Need further reading)
     X_filtered = np.vstack((X[y == 0][:500], X[y == 1][:100], X[y == 2][:10]))
-    y_pred = KMeans(n_clusters=3,
-                    random_state=random_state).fit(X_filtered)
+    y_pred = KMean(n_clusters=3,
+                    random_state=random_state).fit_predict(X_filtered)
+    #sky_pred = KMeans(n_clusters=3,
+    #                random_state=random_state).fit_predict(X_filtered)
 
     plt.subplot(224)
     plt.scatter(X_filtered[:, 0], X_filtered[:, 1], c=y_pred)
+    #plt.scatter(X_filtered[:, 0], X_filtered[:, 1], c=sky_pred)
+
     plt.title("Unevenly Sized Blobs")
     
     plt.show()
