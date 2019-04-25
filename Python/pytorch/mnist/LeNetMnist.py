@@ -1,13 +1,17 @@
+# 更新时间:2019/04/25(完成)
+
 import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 # Hyper Parameters
-EPOCH = 1
+EPOCH = 3
 BATCH_SIZE = 50
 LR = 0.001
 DOWNLOAD_MNIST = False
@@ -26,18 +30,22 @@ class LeNet5(nn.Module):
         # Default: padding = 0
         self.pool = nn.MaxPool2d(2,2)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16*5*5, 120)
+        self.fc1 = nn.Linear(16*4*4, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
-    def forward(x,self):
+    def forward(self,x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1,16*5*5)
+        x = x.view(-1,16*4*4)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+net = LeNet5()
+
+
 
 # MNIST load #
 train_data = torchvision.datasets.MNIST(root=dataset_path,
@@ -58,7 +66,7 @@ test_loader = torch.utils.data.DataLoader(test_data,
 # image visilization #
 def imshow(img):
     npimg = img.numpy()
-    #print(npimg.shape)
+    print(npimg.shape)
     plt.imshow(np.transpose(npimg,(1,2,0)))
     plt.show()
 
@@ -66,3 +74,38 @@ data_iter = iter(train_loader)
 images,labels = data_iter.next()
 imshow(torchvision.utils.make_grid(images))
 
+# Training #
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(net.parameters(),lr=LR)
+
+start_time = time.time()
+for epoch in range(EPOCH):
+    for batch_idx,data in enumerate(train_loader):
+        inputs,labels = data
+        optimizer.zero_grad()
+        outputs = net(inputs)
+        loss = criterion(outputs,labels)
+        loss.backward()
+        optimizer.step()
+
+        if batch_idx % 50 == 0:
+            print('[Epoch:%d,batch:%5d] loss:%.3f'%
+                  (epoch+1,batch_idx,loss.data.numpy()))
+
+print('Finish Traning in %.3f s'%(time.time()-start_time))
+
+# Test #
+correct = 0
+total = 0
+
+with torch.no_grad():
+    # torch.no_grad
+    # Context-manager that disabled gradient calculation.
+    # It will reduce memory consumption for computations.
+    for data in test_loader:
+        inputs,labels = data
+        outputs = net(inputs)
+        _,predicted = torch.max(outputs.data,1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+print('Accuracy: %.3f %%' % (100 * correct / total))
