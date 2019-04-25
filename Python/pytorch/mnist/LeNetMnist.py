@@ -41,6 +41,10 @@ class LeNet5(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
+        # pytorch: nn.CrossEntropyLoss() Doc:
+        # the inputs are tensor that without being
+        # processed with softmax
+        # x = F.softmax(self.fc3(x))
         return x
 
 net = LeNet5()
