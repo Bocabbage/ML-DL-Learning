@@ -15,6 +15,6 @@ Try to build the wheels of CNN.
 * Numpy
 
 ## Plan
- [ ] Forward-part
- [ ] Backward-part
- [ ] LeNet-5
+* [ ] Forward-part
+* [ ] Backward-part
+* [ ] LeNet-5
