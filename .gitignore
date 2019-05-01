@@ -1,2 +1,6 @@
 # ignore the jupyter checkpoints file
 *.ipynb_checkpoints
+*.sh
+*.json
+
+/result
