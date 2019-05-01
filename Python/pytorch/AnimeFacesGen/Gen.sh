@@ -1,12 +1,11 @@
-OUTPIC_PATH=./
-OUTPARA_PATH=./
-DATASET_PATH=./
-PARA_G=./parag.pth
-PARA_D=./parad.pth
+OUTPIC_PATH=/home/ljw/AnimeFacesGen/out_pic
+OUTPARA_PATH=/home/ljw/AnimeFacesGen/out_para
+# DATASET_PATH=/home/ljw/AnimeFacesGen/AnimeFaces
+# PARA_G=./parag.pth
+# PARA_D=./parad.pth
 
 NGPU=1
 EPOCH=1
 
 #conda activate py37
-python ./DCGAN.py --opipath $OUTPIC_PATH --opapath $OUTPARA_PATH --dpath $DATASET_PATH\
---ngpu NGPU --epoch EPOCH  > ./train_log
+python ./DCGAN.py --opipath $OUTPIC_PATH --opapath $OUTPARA_PATH > ./train_log

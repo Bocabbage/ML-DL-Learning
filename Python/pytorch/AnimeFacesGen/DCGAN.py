@@ -10,24 +10,30 @@ import time
 import os
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--epoch',type=int,default=10)
-parser.add_argument('--ngpu',type=int,default=0)
-parser.add_argument('--dpath',default='./')
-parser.add_argument('--opipath',default='./')
-parser.add_argument('--opapath',default='./')
-parser.add_argument('--netG',default='')
-parser.add_argument('--netD',default='')
-opt = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument('--epoch',type=int,default=10)
+# parser.add_argument('--ngpu',type=int,default=0)
+# # parser.add_argument('--dpath',default='./')
+# parser.add_argument('--opipath',default='./')
+# parser.add_argument('--opapath',default='./')
+# # parser.add_argument('--netG',default='')
+# # parser.add_argument('--netD',default='')
+# opt = parser.parse_args()
 
 # Default Hyper parameters
-DATASET_PATH = opt.dpath
-OUTPIC_PATH = opt.opipath
-OUTPARA_PATH = opt.opapath
-EPOCH = opt.epoch
-PARA_G = opt.netG
-PARA_D = opt.netD
-NGPU = opt.ngpu
+OUTPIC_PATH="/home/ljw/AnimeFacesGen/out_pic"
+OUTPARA_PATH="/home/ljw/AnimeFacesGen/out_para"
+DATASET_PATH="/home/ljw/AnimeFacesGen/AnimeFaces"
+NGPU = 1
+EPOCH = 100
+# OUTPIC_PATH = opt.opipath
+# OUTPARA_PATH = opt.opapath
+# # DATASET_PATH = opt.dpath
+# NGPU = opt.ngpu
+# EPOCH = opt.epoch
+PARA_G = ""
+PARA_D = ""
+
 NZ = 100
 IMAGE_SIZE = 64
 BATCH_SIZE = 50
@@ -186,7 +192,7 @@ class Discriminator(nn.Module):
 
         return output.view(-1,1).squeeze(1)
 
-Random weight initialized 
+# Random weight initialized 
 def weight_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -266,6 +272,8 @@ for epoch in range(EPOCH):
 
     torchvision.utils.save_image(fake.detach(), 
                                  '%s/fake_samples_epoch_%03d.jpg'%
+                                 (OUTPIC_PATH,epoch))
+    torchvision.utils.save_image(real_data.detach(),'%s/real_samples_epoch_%03d.jpg'%
                                  (OUTPIC_PATH,epoch))
 
     # Save Para
