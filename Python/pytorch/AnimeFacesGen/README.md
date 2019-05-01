@@ -9,6 +9,7 @@ The structure of the Generator G(z) is like the following:
 ## Dataset
 50,000 Anime-faces pictures of size 96\*96\*3.(would be finally transformed to 64\*64\*3)
 * Samples
+
 ![image](imgs/DatasetSamples.png)
 
 ## Instruments
@@ -20,6 +21,6 @@ The structure of the Generator G(z) is like the following:
 usage: python DCGAN.py
 ```
 ## Result
-Epoch_numbers : 100
+* Epoch_numbers : 100
 
 ![image](imgs/fake_samples_epoch_099.jpg)
