@@ -1,8 +1,9 @@
 # AnimeFacesGenerate: Use Deep Convolution Generative Adversarial Networks(DCGAN)
 
 ## Target
-Use Deep Convolution Generative Adversarial Networks(DCGAN) for Anime-faces Generation.
+Use [Deep Convolution Generative Adversarial Networks(DCGAN) for Anime-faces Generation](https://arxiv.org/abs/1511.06434).
 The structure of the Generator G(z) is like the following:
+
 ![image](imgs/Gz_structure.png)
 
 ## Dataset
@@ -20,4 +21,5 @@ usage: python DCGAN.py
 ```
 ## Result
 Epoch_numbers : 100
+
 ![image](imgs/fake_samples_epoch_099.jpg)
