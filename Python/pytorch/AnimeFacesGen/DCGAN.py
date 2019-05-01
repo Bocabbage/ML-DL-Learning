@@ -8,21 +8,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import os
+import argparse
 
-#Hyper parameters
-IS_CUDA = True
-DATASET_PATH = 'E:/Programming/Dataset/AnimeFaces/'
+parser = argparse.ArgumentParser()
+parser.add_argument('--epoch',type=int,default=10)
+parser.add_argument('--ngpu',type=int,default=0)
+parser.add_argument('--dpath',default='./')
+parser.add_argument('--opipath',default='./')
+parser.add_argument('--opapath',default='./')
+parser.add_argument('--netG',default='')
+parser.add_argument('--netD',default='')
+opt = parser.parse_args()
+
+# Default Hyper parameters
+DATASET_PATH = opt.dpath
+OUTPIC_PATH = opt.opipath
+OUTPARA_PATH = opt.opapath
+EPOCH = opt.epoch
+PARA_G = opt.netG
+PARA_D = opt.netD
+NGPU = opt.ngpu
+NZ = 100
 IMAGE_SIZE = 64
 BATCH_SIZE = 50
 LR_G = 0.0002
 LR_D = 0.0002
 BETAS = (0.5,0.999)
-EPOCH = 1
+
 
 # GPU Setting
-NGPU = 0
-if torch.cuda.is_available():
-    NGPU = 1
+#NGPU = 0
+if torch.cuda.is_available() and NGPU!=0:
     device = torch.device("cuda:0")
 else:
     device = torch.device("cpu")
@@ -56,7 +72,7 @@ imshow(torchvision.utils.make_grid(images))
 
 # Module Define (DCGAN)
 class Generator(nn.Module):
-    def __init__(self,ngpu):
+    def __init__(self,ngpu=0):
         super(Generator,self).__init__()
         self.ngpu = ngpu
         self.fc = nn.Linear(100, 1024*4*4)
@@ -99,7 +115,7 @@ class Generator(nn.Module):
             # size: 3*64*64
         )
 
-    def forward(self,input):
+    def forward(self,inputs):
         inputs = self.fc(inputs)
         inputs = inputs.view(-1,1024,4,4)
         if self.ngpu > 1:
@@ -107,13 +123,13 @@ class Generator(nn.Module):
                                                inputs,
                                                range(self.ngpu))
         else:
-            output = self._main(input)
+            output = self._main(inputs)
 
         return output
 
 
 class Discriminator(nn.Module):
-    def __init__(self,ngpu):
+    def __init__(self,ngpu=0):
         super(Discriminator,self).__init__()
         self.ngpu = ngpu
         self._main = nn.Sequential(
@@ -168,15 +184,30 @@ class Discriminator(nn.Module):
         else:
             output = self._main(input)
 
-        return ouput.view(-1,1).squeeze(1)
+        return output.view(-1,1).squeeze(1)
+
+Random weight initialized 
+def weight_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        m.weight.data.normal_(0.0,0.02)
+    elif classname.find('BatchNorm') != -1:
+        m.weight.data.normal_(1.0,0.02)
+        m.bias.data.fill_(0)
 
 print(device)
 
 netG = Generator(NGPU).to(device)
-print(netG)
+netG.apply(weight_init)
+if PARA_G != '':
+    netG.load_state_dict(torch.load(PARA_G))
+#print(netG)
 
 netD = Discriminator(NGPU).to(device)
-print(netD)
+netD.apply(weight_init)
+if PARA_D != '':
+    netD.load_state_dict(torch.load(PARA_G))
+#print(netD)
 
 # Criterion and Optimizer options
 criterion = nn.BCELoss()
@@ -186,46 +217,61 @@ fake_label = 0
 optimizerD = optim.Adam(netD.parameters(),lr=LR_D,betas=BETAS)
 optimizerG = optim.Adam(netG.parameters(),lr=LR_G,betas=BETAS)
 
-# for epoch in range(EPOCH):
-#     for batch_idx,data in enumerate(data_loader):
-#         ###### Step1: Update Discriminator ######
-#         ### Maximize log(D(x))+log(1-D(G(z))) ###
-#         #########################################
-#         # train with real #
-#         netD.zero_grad()
-#         real_data = data[0].to(device)
-#         batch_size = real_data.size(0)
-#         labels = torch.full((batch_size,),real_label,device=device)
+for epoch in range(EPOCH):
+    for batch_idx,data in enumerate(data_loader):
+        ###### Step1: Update Discriminator ######
+        ### Maximize log(D(x))+log(1-D(G(z))) ###
+        #########################################
+        # train with real #
+        netD.zero_grad()
+        real_data = data[0].to(device)
+        batch_size = real_data.size(0)
+        labels = torch.full((batch_size,),real_label,device=device)
 
-#         output = netD(real_data)
-#         errD_real = criterion(output,labels)
-#         errD_real.backward()
+        output = netD(real_data)
+        errD_real = criterion(output,labels)
+        errD_real.backward()
 
-#         # train with fake #
-#         noise = torch.randn(batch_size,NZ,1,1,device=device)
-#         fake = netG(noise)
-#         # replace the 'labels' with fake_label in-place
-#         labels.fill_(fake_label)
-#         # detach it so it won't influence the parameters in G
-#         output = netD(fake.detach())
-#         errD_fake = criterion(output,labels)
-#         errD_fake.backward()
+        # train with fake #
+        noise = torch.randn(batch_size,NZ,device=device)
+        fake = netG(noise)
+        # replace the 'labels' with fake_label in-place
+        labels.fill_(fake_label)
+        # detach it so it won't influence the parameters in G
+        output = netD(fake.detach())
+        errD_fake = criterion(output,labels)
+        errD_fake.backward()
 
-#         errD = errD_real + errD_fake
-#         optimizerD.step()
+        errD = errD_real + errD_fake
+        optimizerD.step()
 
-#         #########################################
+        #########################################
 
-#         ###### Step2: Update Generator ######
-#         ###### Maximize log(D(G(z)))   ######
-#         #####################################
-#         netG.zero_grad()
-#         labels.fill_(real_label)
-#         output = netD(fake)
-#         errG = criterion(output,labels)
-#         errG.backward()
+        ###### Step2: Update Generator ######
+        ###### Maximize log(D(G(z)))   ######
+        #####################################
+        netG.zero_grad()
+        labels.fill_(real_label)
+        output = netD(fake)
+        errG = criterion(output,labels)
+        errG.backward()
 
-#         optimizerG.step()
+        optimizerG.step()
 
-#         #####################################
+        #####################################
+        if batch_idx % 50 == 0:
+            print('[%d/%d][%d/%d] Loss_D:%.4f | Loss_G:%.4f'
+                  %(epoch,EPOCH,batch_idx,len(data_loader),
+                    errD.item(),errG.item()))
+
+    torchvision.utils.save_image(fake.detach(), 
+                                 '%s/fake_samples_epoch_%03d.jpg'%
+                                 (OUTPIC_PATH,epoch))
+
+    # Save Para
+    torch.save(netG.state_dict(),'%s/netG_epoch_%d.pth'%(OUTPARA_PATH,epoch))
+    torch.save(netD.state_dict(),'%s/netD_epoch_%d.pth'%(OUTPARA_PATH,epoch))
+
+
+
 
