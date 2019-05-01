@@ -3,4 +3,4 @@
 *.sh
 *.json
 
-/result
+result/
