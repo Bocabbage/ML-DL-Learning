@@ -11,26 +11,26 @@ import os
 import argparse
 
 # parser = argparse.ArgumentParser()
-# parser.add_argument('--epoch',type=int,default=10)
-# parser.add_argument('--ngpu',type=int,default=0)
-# # parser.add_argument('--dpath',default='./')
-# parser.add_argument('--opipath',default='./')
-# parser.add_argument('--opapath',default='./')
-# # parser.add_argument('--netG',default='')
-# # parser.add_argument('--netD',default='')
-# opt = parser.parse_args()
+parser.add_argument('--epoch',type=int,default=10)
+parser.add_argument('--ngpu',type=int,default=0)
+parser.add_argument('--dpath',default='./')
+parser.add_argument('--opipath',default='./')
+parser.add_argument('--opapath',default='./')
+parser.add_argument('--netG',default='')
+parser.add_argument('--netD',default='')
+opt = parser.parse_args()
 
 # Default Hyper parameters
-OUTPIC_PATH="/home/ljw/AnimeFacesGen/out_pic"
-OUTPARA_PATH="/home/ljw/AnimeFacesGen/out_para"
-DATASET_PATH="/home/ljw/AnimeFacesGen/AnimeFaces"
-NGPU = 1
-EPOCH = 100
-# OUTPIC_PATH = opt.opipath
-# OUTPARA_PATH = opt.opapath
-# # DATASET_PATH = opt.dpath
-# NGPU = opt.ngpu
-# EPOCH = opt.epoch
+# OUTPIC_PATH="/home/ljw/AnimeFacesGen/out_pic"
+# OUTPARA_PATH="/home/ljw/AnimeFacesGen/out_para"
+# DATASET_PATH="/home/ljw/AnimeFacesGen/AnimeFaces"
+# NGPU = 1
+# EPOCH = 100
+OUTPIC_PATH = opt.opipath
+OUTPARA_PATH = opt.opapath
+DATASET_PATH = opt.dpath
+NGPU = opt.ngpu
+EPOCH = opt.epoch
 PARA_G = ""
 PARA_D = ""
 
