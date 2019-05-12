@@ -1,3 +1,12 @@
+#!/usr/bin/env
+# -*- coding: utf-8 -*- #
+'''
+    Project: DCGAN
+    Author: Zhuofan Zhang
+    E-mail: zfzhang@seu.edu.cn
+    Python Version: Python3.7.2
+    Update date: 2019/05/12(finished)
+'''
 import torch
 import torchvision
 import torchvision.transforms as transforms
