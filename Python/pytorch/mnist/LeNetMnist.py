@@ -1,5 +1,9 @@
-# 更新时间:2019/04/25(完成)
-
+#!/usr/bin/env
+# -*- coding: utf-8 -*- #
+'''
+    Python Version: Python3.7.2
+    Update date: 2019/04/29(finished)
+'''
 import os
 import torch
 import torch.nn as nn
